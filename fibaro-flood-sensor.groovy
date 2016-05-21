@@ -33,6 +33,8 @@
  *
  * @return none
  */
+import groovyx.net.http.ContentType
+
 metadata {
 	definition (name: "Fibaro Flood Sensor", namespace: "smartthings", author: "Todd Wackford") {
 		capability "Water Sensor"
@@ -88,6 +90,7 @@ metadata {
 				[value: 96, color: "#bc2323"]
 			]
 		}
+		
         standardTile("tamper", "device.tamper") {
 			state("secure", 	label:"secure",   	icon:"st.locks.lock.locked",   backgroundColor:"#ffffff")
 			state("tampered", 	label:"tampered", 	icon:"st.locks.lock.unlocked", backgroundColor:"#53a7c0")
@@ -104,6 +107,20 @@ metadata {
 	}
 }
 
+def waterDetectedHandler(evt){
+	input "water", "capability.waterSensor", title: "Dry or Wet?"
+	http.request(POST) {
+    		uri.path = 'http://example.com/handler.php'
+    		body = [water:"wet"]
+    		requestContentType = ContentType.JSON
+    		response.success = { resp ->
+        		println "Success! ${resp.status}"
+    		}
+    		response.failure = { resp ->
+        		println "Request failed with status ${resp.status}"
+		}
+	}
+}
 // Parse incoming device messages to generate events
 def parse(String description)
 {
